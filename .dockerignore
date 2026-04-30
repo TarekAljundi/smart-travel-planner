@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/build/
+
+# Environment
+.env
+*.env.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific (regenerated at runtime)
+backend/data/
+backend/pipeline/
+backend/knowledge_base/
+
+# Keep the scripts and .txt lists if you need them inside the image (no, they are not needed)

@@ -1,0 +1,58 @@
+[project]
+name = "smart-travel-planner"
+version = "0.1.0"
+description = "AI-powered travel planner agent"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30",
+    "pgvector>=0.3.6",
+    "alembic>=1.14",
+    "httpx>=0.28",
+    "openai>=1.59",
+    "langsmith>=0.2.10",
+    "sentence-transformers>=3.3",
+    "scikit-learn>=1.6",
+    "joblib>=1.4",
+    "python-jose[cryptography]>=3.3",
+    "passlib[bcrypt]>=1.7",
+    "python-multipart>=0.0.18",
+    "structlog>=24.4",
+    "cachetools>=5.5",
+    "tenacity>=9.0",
+    "pandas>=3.0.2",
+    "langgraph>=1.1.10",
+    "langchain>=1.2.16",
+    "psycopg2-binary>=2.9.12",
+    "langchain-openai>=1.2.1",
+    "imblearn>=0.0",
+]
+
+
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+select = ["E", "F", "I", "B", "UP", "ASYNC", "S"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]
+
+
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "httpx-sse>=0.4",
+    "ruff>=0.8",
+    "pre-commit>=4.0",
+]
+
+

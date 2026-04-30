@@ -1,0 +1,80 @@
+# --------------------------
+# Python
+# --------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.manifest
+*.spec
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment & secrets
+.env
+*.env.local
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# --------------------------
+# Node / Frontend
+# --------------------------
+node_modules/
+frontend/dist/
+frontend/build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --------------------------
+# IDE / editor
+# --------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --------------------------
+# OS files
+# --------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --------------------------
+# Docker / Volumes
+# --------------------------
+docker-compose.override.yml
+pgdata/
+
+# --------------------------
+# Project‑specific data & models
+# --------------------------
+# Keep raw dataset source but ignore generated files?
+# Decide per need – below ignores all generated model artifacts and CSVs
+backend/data/
+backend/pipeline/
+backend/knowledge_base/
+# Keep the scripts and source lists, though:
+!backend/scripts/sample_docs/**/*.txt
+!backend/knowledge_base/**/*.txt
+# Ignore the fetched Wikivoyage text if you regenerate often
+backend/scripts/sample_docs/*.txt
+backend/knowledge_base/**/*.txt
+
+# --------------------------
+# Alembic
+# --------------------------
+backend/alembic/versions/*.pyc
