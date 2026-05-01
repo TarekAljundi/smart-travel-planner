@@ -323,9 +323,7 @@ Thread‑based persistence to survive client disconnections.
 Demo Video
 A 3‑minute walkthrough showing a complete end‑to‑end user journey (registration, streaming agent, tool calls, email delivery) is available at:
 
-[Link to demo video]
-
-(Replace with the actual URL after recording.)
+https://youtu.be/hkSEaEKTn5s
 
 Acknowledgments
 Destination content sourced from Wikivoyage (CC‑BY‑SA).
