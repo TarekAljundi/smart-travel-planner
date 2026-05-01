@@ -1,34 +1,42 @@
 # backend/app/services/webhook.py
-import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import smtplib
+import structlog
+from email.message import EmailMessage
 from app.config import get_settings
 from app.models.schemas import TripPlan
-import structlog
 
 settings = get_settings()
 log = structlog.get_logger()
 
 
-@retry(
-    stop=stop_after_attempt(settings.webhook_retry_attempts),
-    wait=wait_exponential(
-        multiplier=settings.webhook_retry_backoff_multiplier,
-        min=settings.webhook_retry_backoff_min,
-        max=settings.webhook_retry_backoff_max,
-    ),
-    retry=retry_if_exception_type((httpx.TimeoutException, httpx.NetworkError)),
-    reraise=False,
-)
-async def deliver_webhook(payload: TripPlan) -> bool:
-    async with httpx.AsyncClient(timeout=settings.webhook_timeout) as client:
-        resp = await client.post(settings.webhook_url, json=payload.model_dump())
-        resp.raise_for_status()
-    log.info("webhook.delivered")
-    return True
-
-
-async def send_webhook(payload: TripPlan):
+def send_webhook_sync(payload: TripPlan):
+    """Synchronous version – runs safely in a background thread."""
     try:
-        await deliver_webhook(payload)
+        msg = EmailMessage()
+        msg["From"] = settings.webhook_gmail_address
+        msg["To"] = payload.user_email
+        msg["Subject"] = f"Your trip plan: {payload.query[:50].strip()}..."
+
+        body = f"""Hi there!
+
+Here is the trip plan you requested:
+
+{payload.plan}
+
+---
+Sent by Smart Travel Planner
+Query: {payload.query}
+"""
+        msg.set_content(body)
+
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(
+                settings.webhook_gmail_address,
+                settings.webhook_gmail_app_password,
+            )
+            server.send_message(msg)
+
+        log.info("email.sent", to=payload.user_email)
     except Exception as e:
-        log.error("webhook.failed", error=str(e))
+        log.error("email.failed", error=str(e))

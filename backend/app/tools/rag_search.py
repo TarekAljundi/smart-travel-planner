@@ -8,6 +8,11 @@ settings = get_settings()
 
 
 async def rag_search(query: RAGQuery, session, embedder, top_k: int = 3) -> List[RAGResult]:
+    """
+    Search destination chunks using pgvector cosine similarity.
+    If no relevant chunks are found, returns a single RAGResult with an
+    informative message so the agent knows the knowledge base has no data.
+    """
     embedding = embedder.encode(query.query).tolist()
     emb_str = str(embedding).replace(" ", "")
 
@@ -20,6 +25,16 @@ async def rag_search(query: RAGQuery, session, embedder, top_k: int = 3) -> List
     """)
     result = await session.execute(sql, {"k": top_k})
     rows = result.fetchall()
+
+    if not rows:
+        # No matching chunks → return a single informative result
+        return [
+            RAGResult(
+                text="No information found in the knowledge base for this query.",
+                destination="unknown",
+                relevance=0.0,
+            )
+        ]
 
     return [
         RAGResult(

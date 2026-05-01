@@ -1,7 +1,7 @@
 # backend/tests/test_retrieval.py
 import pytest
+from sqlalchemy import text, create_engine, exc
 from sentence_transformers import SentenceTransformer
-from sqlalchemy import text, create_engine
 from app.config import get_settings
 
 settings = get_settings()
@@ -14,8 +14,16 @@ def embedder():
 
 @pytest.fixture(scope="module")
 def engine():
-    sync_url = settings.database_url.replace("+asyncpg", "+psycopg2")
-    return create_engine(sync_url)
+    # Replace Docker service name 'db' with 'localhost' for local testing
+    sync_url = settings.database_url.replace("+asyncpg", "+psycopg2").replace("@db:", "@localhost:")
+    try:
+        eng = create_engine(sync_url)
+        # Test the connection – if it fails, we'll skip
+        with eng.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return eng
+    except exc.OperationalError:
+        pytest.skip("PostgreSQL is not available – start the database container")
 
 
 QUERIES = [
@@ -29,6 +37,15 @@ QUERIES = [
 
 def test_retrieval_returns_correct_destinations(embedder, engine):
     with engine.connect() as conn:
+        # Check if the table exists
+        table_exists = conn.execute(
+            text(
+                f"SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = '{settings.vector_table_name}')"
+            )
+        ).scalar()
+        if not table_exists:
+            pytest.skip(f"Table {settings.vector_table_name} does not exist – run load_rag.py first")
+
         for query in QUERIES:
             q_emb = embedder.encode(query).tolist()
             emb_str = str(q_emb).replace(" ", "")

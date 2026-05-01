@@ -46,8 +46,8 @@ class TripPlan(BaseModel):
     user_id: int
     query: str
     plan: str
-    tools_used: List[str]
-    
+    tools_used: List[str] = []
+    user_email: str     
 # ------- Internal user representation -------
 class CurrentUser(BaseModel):
     id: int

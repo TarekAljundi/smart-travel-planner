@@ -2,8 +2,8 @@
 import json
 import structlog
 from typing import Type
-from pydantic import BaseModel
 
+from pydantic import BaseModel
 from langchain.agents import create_agent
 from langchain_core.tools import BaseTool
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
@@ -35,7 +35,7 @@ log = structlog.get_logger()
 
 
 # ---------------------------------------------------------------------
-#  Pydantic tools – every input model comes from app.models.schemas
+#  Pydantic tools – each one calls the correct underlying function
 # ---------------------------------------------------------------------
 class RAGSearchTool(BaseTool):
     name: str = "search_destinations"
@@ -51,11 +51,10 @@ class RAGSearchTool(BaseTool):
     def _run(self, *args, **kwargs) -> str:
         raise NotImplementedError("Use async version")
 
-    async def _arun(self, query: str) -> str:
-        rag_input = RAGQuery(query=query)
-        # Use a fixed top_k of 3 (no longer controlled by the LLM)
+    async def _arun(self, query: str, top_k: int = 3) -> str:
+        rag_input = RAGQuery(query=query, top_k=top_k)
         async with self.session_factory() as session:
-            results = await rag_search(rag_input, session, self.embedder, top_k=3)
+            results = await rag_search(rag_input, session, self.embedder, top_k=top_k)
         return json.dumps([r.model_dump() for r in results], default=str)
 
 
@@ -95,7 +94,7 @@ class GetWeatherTool(BaseTool):
         return result.model_dump_json()
 
 
-# ---------- The main agent function stays unchanged ----------
+# ---------- The main agent function ----------
 async def run_agent_and_stream_synthesis(
     query: str,
     classifier,
@@ -132,20 +131,23 @@ async def run_agent_and_stream_synthesis(
     result = await agent.ainvoke({"messages": [HumanMessage(content=query)]})
     messages = result["messages"]
 
-    # Emit tool events
-    for i, msg in enumerate(messages):
+    # Build a map of tool_call_id → result content
+    tool_results = {}
+    for msg in messages:
+        if isinstance(msg, ToolMessage) and getattr(msg, "tool_call_id", None):
+            tool_results[msg.tool_call_id] = msg.content
+
+    # Emit events for each tool call, using the correct result
+    for msg in messages:
         if isinstance(msg, AIMessage) and hasattr(msg, "tool_calls") and msg.tool_calls:
             for tc in msg.tool_calls:
-                tool_output = None
-                if i + 1 < len(messages) and isinstance(messages[i + 1], ToolMessage):
-                    tool_output = messages[i + 1].content
+                tool_output = tool_results.get(tc["id"])
                 yield f'data: {{"type": "tool_call", "tool": "{tc["name"]}", "input": {json.dumps(tc["args"])}}}\n\n'
                 if tool_output:
                     yield f'data: {{"type": "tool_result", "tool": "{tc["name"]}", "output": {json.dumps(tool_output)}, "status": "success"}}\n\n'
 
-    # Final synthesis
-    tool_outputs = [msg.content for msg in messages if isinstance(msg, ToolMessage)]
-    context = "\n".join(tool_outputs)
+    # Gather context for synthesis (using the same map)
+    context = "\n".join(tool_results.values()) if tool_results else ""
     synthesis_prompt = SYNTHESIS_PROMPT_TEMPLATE.format(query=query, context=context)
 
     async for chunk in strong_llm.astream(synthesis_prompt):

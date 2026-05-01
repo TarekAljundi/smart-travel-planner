@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        extra="forbid",
+        extra="ignore",
     )
 
     # -------------------------- Required secrets --------------------------
@@ -16,6 +16,14 @@ class Settings(BaseSettings):
     groq_api_key: str = Field(..., min_length=1)
     secret_key: str = Field(..., min_length=1)
     webhook_url: str = Field(..., min_length=1)
+    webhook_gmail_address: str = Field(..., min_length=1)   # your Gmail address
+    webhook_gmail_app_password: str = Field(..., min_length=1)
+    
+    # LangSmith tracing (optional – only needed if you want tracing)
+    langsmith_tracing: str = "false"
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
+    langsmith_api_key: str = ""
+    langsmith_project: str = "Smart-Travel-Planner"
 
     # -------------------------- Groq --------------------------
     groq_api_base: str = "https://api.groq.com/openai/v1"
