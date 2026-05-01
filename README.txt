@@ -168,9 +168,8 @@ The agent is instructed (via system prompt) to refuse planning if the knowledge 
 LangSmith Tracing
 Every agent run is traced end‑to‑end via the free tier of LangSmith. The following screenshot shows a multi‑tool trace (search, classify, weather, synthesis):
 
-https://docs/langsmith_trace.png
+https://github.com/TarekAljundi/smart-travel-planner/issues/1#issue-4363848479
 
-Replace with an actual screenshot from your LangSmith dashboard.
 
 Per‑Query Cost
 Token usage is logged by Groq’s API. A typical full query (three tool calls + synthesis) consumes approximately:
