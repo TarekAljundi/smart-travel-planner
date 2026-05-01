@@ -1,33 +1,53 @@
+# --------------------------
 # Python
+# --------------------------
 __pycache__/
 *.py[cod]
 .venv/
 *.egg-info/
 
+# --------------------------
 # Node
+# --------------------------
 node_modules/
 frontend/dist/
 frontend/build/
 
-# Environment
+# --------------------------
+# Environment & secrets
+# --------------------------
 .env
 *.env.local
 
+# --------------------------
 # Git
+# --------------------------
 .git/
 .gitignore
 
+# --------------------------
 # IDE
+# --------------------------
 .vscode/
 .idea/
 
+# --------------------------
 # OS
+# --------------------------
 .DS_Store
 Thumbs.db
 
-# Project-specific (regenerated at runtime)
+# --------------------------
+# Project‑specific generated data
+# --------------------------
 backend/data/
 backend/pipeline/
 backend/knowledge_base/
 
-# Keep the scripts and .txt lists if you need them inside the image (no, they are not needed)
+# Keep the source list if needed; otherwise these folders are regenerated at runtime
+# !backend/data/destination_list.csv
+
+# --------------------------
+# Tests
+# --------------------------
+backend/tests/
